@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "nodemon index.js",
+    "build": "node index.js",
     "lint": "eslint .",
     "format": "prettier \"**/*.{js,jsx,ts,tsx}\" --write",
     "lint-global": "echo \"Prettier is running...\" && prettier \"**/*.{js,jsx,ts,tsx}\" --write && echo \"ESlint is running...\" && eslint .",
