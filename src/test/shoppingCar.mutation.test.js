@@ -98,6 +98,7 @@ describe('test addProductShoppingCar', () => {
     mockingoose.resetAll();
     jest.clearAllMocks();
   });
+
   it('should return the doc addProductShoppingCar', async () => {
     mockingoose(modelShoppingCar).toReturn(
       {
