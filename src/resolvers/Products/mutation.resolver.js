@@ -18,7 +18,7 @@ module.exports = {
     try {
       const deleteProduct = await modelProducts.findOneAndDelete({ code: code });
 
-      if (deleteProduct !== null) {
+      if (typeof deleteProduct !== 'undefined') {
         return deleteProduct;
       }
 
