@@ -2,7 +2,7 @@ version: '3.7'
 
 services:
 
-  counter_app:
+  shopping_car:
     container_name: ShoppingCar
     build:
       context: .
