@@ -154,18 +154,15 @@ describe('test GetDetailProduct', () => {
 
   it('should return the doc DetailProduct Product No Exit', async () => {
     mockingoose(modelProducts).toReturn({});
-    try {
-      const testGetDetailProduct = await product(
+    await expect(
+      product(
         {},
         {
           code: 'bandeja-paisa-food',
         },
         { clientRedis: createMockRedis(), errorName: errorName }
-      );
-      expect(testGetDetailProduct);
-    } catch (error) {
-      expect(error.message).toBe('PRODUCT_NOT_FOUND');
-    }
+      )
+    ).rejects.toThrowError('PRODUCT_NOT_FOUND');
   });
 });
 
@@ -235,19 +232,15 @@ describe('test deleteProduct', () => {
   it('should return the doc createProduct With Error', async () => {
     mockingoose(modelProducts).toReturn([]);
 
-    try {
-      const testDeleteProduct = await deleteProduct(
+    await expect(
+      deleteProduct(
         {},
         {
           code: 'computador-7-nucleos-techh',
         },
         { errorName: errorName }
-      );
-
-      expect(testDeleteProduct);
-    } catch (error) {
-      expect(error.message).toBe('PRODUCT_DELETE_NOT_FOUND');
-    }
+      )
+    ).rejects.toThrowError('PRODUCT_DELETE_NOT_FOUND');
   });
 });
 
@@ -294,8 +287,8 @@ describe('test updateProduct', () => {
   it('should return the doc updateProduct With Error', async () => {
     mockingoose(modelProducts).toReturn([]);
 
-    try {
-      const testUpdateProduct = await updateProduct(
+    await expect(
+      updateProduct(
         {},
         {
           code: 'computador-7-nucleos-tech',
@@ -306,11 +299,7 @@ describe('test updateProduct', () => {
           },
         },
         { errorName: errorName, clientRedis: createMockRedis() }
-      );
-
-      expect(testUpdateProduct);
-    } catch (error) {
-      expect(error.message).toBe('PRODUCT_UPDATE_NOT_FOUND');
-    }
+      )
+    ).rejects.toThrowError('PRODUCT_UPDATE_NOT_FOUND');
   });
 });
