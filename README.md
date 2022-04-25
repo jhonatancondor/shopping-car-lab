@@ -36,7 +36,7 @@ build the image.
 
 ```sh
 cd shopping-car-lab
-docker build -t shopping-car .
+docker build -t shopping-car --build-arg ENV=prod .
 ```
 ```sh
 docker run -t -d -p 8080:4000 shopping-car

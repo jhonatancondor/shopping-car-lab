@@ -1,10 +1,6 @@
 /* eslint eqeqeq: 0 */
 
-const modelProducts = require('../models/products.model');
-
-async function getProductsByIds(ids) {
-  return await modelProducts.find({ _id: { $in: ids } });
-}
+const { getProductsByIds, findByCode } = require('../repositories/products.repository');
 
 async function validateIdsProducts(ids, errorName) {
   const productsData = await getProductsByIds(ids);
@@ -26,9 +22,9 @@ async function generateCode(string, count) {
     code = `${code}-${count}`;
   }
 
-  const exitsCode = await modelProducts.findOne({ code: code });
+  const exitsCodeVal = await findByCode(code);
 
-  if (exitsCode) {
+  if (exitsCodeVal) {
     return generateCode(string, count + 1);
   }
   return code;

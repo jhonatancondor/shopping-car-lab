@@ -5,42 +5,12 @@ const errorConstants = require('../config/errorConstant.config');
 const modelProducts = require('../models/products.model');
 const { createProduct, deleteProduct, updateProduct } = require('../resolvers/Products/mutation.resolver');
 const { product, products } = require('../resolvers/Products/query.resolver');
-
+const redisMock = require('redis-mock');
 const formatError = new FormatError(errorConstants);
 
 const errorName = formatError.errorName;
 
-function createMockRedis() {
-  const products = [
-    {
-      code: 'arroz-paisa-food',
-      'arroz-paisa-food':
-        '{"_id": "6256f4579213ca3918ecdabb","code": "arroz-paisa-food","name": "Arroz Paisa","price": 15000,"category": "FOOD"}',
-    },
-  ];
-  return {
-    getAsync: function (code) {
-      return new Promise((resolve) => {
-        const search = products.find((product) => product.code === code);
-        if (search) {
-          resolve(search[code]);
-        }
-        resolve(null);
-      });
-    },
-    set: function (code, string) {
-      const json = { code: code };
-      json[code] = string;
-      return Promise.resolve(products.push(json));
-    },
-    del: function (code) {
-      const searchIdx = products.findIndex((product) => product.code === code);
-      if (searchIdx) {
-        products.splice(searchIdx, 1);
-      }
-    },
-  };
-}
+const clientRedisMock = redisMock.createClient();
 
 describe('test GetProducts', () => {
   beforeEach(() => {
@@ -75,7 +45,7 @@ describe('test GetProducts', () => {
         limit: 2,
         offset: 0,
       },
-      { clientRedis: createMockRedis() }
+      { clientRedis: clientRedisMock }
     );
 
     expect(testGetProducts[0]).toHaveProperty('code');
@@ -96,6 +66,7 @@ describe('test GetDetailProduct', () => {
   beforeEach(() => {
     mockingoose.resetAll();
     jest.clearAllMocks();
+    clientRedisMock.del('bandeja-paisa-food');
   });
 
   it('should return the doc DetailProduct With Redis', async () => {
@@ -115,7 +86,7 @@ describe('test GetDetailProduct', () => {
       {
         code: 'arroz-paisa-food',
       },
-      { clientRedis: createMockRedis() }
+      { clientRedis: clientRedisMock }
     );
 
     expect(testGetDetailProduct).toHaveProperty('code');
@@ -142,7 +113,7 @@ describe('test GetDetailProduct', () => {
       {
         code: 'bandeja-paisa-food',
       },
-      { clientRedis: createMockRedis() }
+      { clientRedis: clientRedisMock }
     );
 
     expect(testGetDetailProduct).toHaveProperty('code');
@@ -160,7 +131,7 @@ describe('test GetDetailProduct', () => {
         {
           code: 'bandeja-paisa-food',
         },
-        { clientRedis: createMockRedis(), errorName: errorName }
+        { clientRedis: clientRedisMock, errorName: errorName }
       )
     ).rejects.toThrowError('PRODUCT_NOT_FOUND');
   });
@@ -183,6 +154,9 @@ describe('test createProduct', () => {
           price: '20000000',
           category: 'TECH',
         },
+      },
+      {
+        errorName: errorName,
       }
     );
 
@@ -219,7 +193,7 @@ describe('test deleteProduct', () => {
       {
         code: 'computador-7-nucleos-techh',
       },
-      { errorName: errorName }
+      { errorName: errorName, clientRedis: clientRedisMock }
     );
 
     expect(testDeleteProduct).toHaveProperty('_id');
@@ -238,7 +212,7 @@ describe('test deleteProduct', () => {
         {
           code: 'computador-7-nucleos-techh',
         },
-        { errorName: errorName }
+        { errorName: errorName, clientRedis: clientRedisMock }
       )
     ).rejects.toThrowError('PRODUCT_DELETE_NOT_FOUND');
   });
@@ -274,7 +248,7 @@ describe('test updateProduct', () => {
           category: 'TECH',
         },
       },
-      { errorName: errorName, clientRedis: createMockRedis() }
+      { errorName: errorName, clientRedis: clientRedisMock }
     );
 
     expect(testUpdateProduct).toHaveProperty('_id');
@@ -298,7 +272,7 @@ describe('test updateProduct', () => {
             category: 'TECH',
           },
         },
-        { errorName: errorName, clientRedis: createMockRedis() }
+        { errorName: errorName, clientRedis: clientRedisMock }
       )
     ).rejects.toThrowError('PRODUCT_UPDATE_NOT_FOUND');
   });

@@ -38,5 +38,9 @@ jobs:
             git fetch --all &&
             git reset --hard origin/master &&
             git pull origin master &&
-            docker-compose -f docker-compose.yml up -d --build 
+            docker kill $(docker ps -q) &&
+            docker rm $(docker ps -a -q) &&
+            docker rmi $(docker images -q) &&
+            docker build -t shopping-car --build-arg ENV=prod . &&
+            docker run -t -d -p 8080:4000 shopping-car
           '
