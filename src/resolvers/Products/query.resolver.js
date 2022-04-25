@@ -1,21 +1,22 @@
-const modelProducts = require('../../models/products.model');
+const { findProducts, findByCode } = require('../../repositories/products.repository');
+const { getKey } = require('../../utils/redis.functions');
 
 module.exports = {
   products: async (_, { limit, offset }) => {
-    return await modelProducts.find().limit(parseInt(limit)).skip(parseInt(offset));
+    return await findProducts(limit, offset);
   },
   product: async (_, { code }, { clientRedis, errorName }) => {
     try {
-      let jsonProductRedis = await clientRedis.getAsync(code);
+      let jsonProductRedis = await getKey(clientRedis, code);
 
       if (jsonProductRedis) {
         return JSON.parse(jsonProductRedis);
       }
 
-      jsonProductRedis = await modelProducts.findOne({ code: code });
+      jsonProductRedis = await findByCode(code);
 
       if (jsonProductRedis) {
-        await clientRedis.set(code, JSON.stringify(jsonProductRedis));
+        await clientRedis.set(code, JSON.stringify(jsonProductRedis), 'EX', 300);
       } else {
         throw errorName.PRODUCT_NOT_FOUND;
       }

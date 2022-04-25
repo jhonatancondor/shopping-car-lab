@@ -1,24 +1,26 @@
 /* eslint eqeqeq: 0 */
 
 const modelProducts = require('../../models/products.model');
+const { createProduct, updateByCode } = require('../../repositories/products.repository');
 const { generateCode } = require('../../services/products.service');
 
 module.exports = {
-  async createProduct(_, { products }) {
+  async createProduct(_, { products }, { errorName }) {
     try {
       products.code = await generateCode(`${products.name} ${products.category}`, 0);
-      const newProduct = new modelProducts(products);
-      await newProduct.save();
-      return newProduct;
+      if (products.price <= 0) {
+        throw errorName.PRODUCT_PRICE_NOT_VALID;
+      }
+      return await createProduct(products);
     } catch (error) {
       throw new Error(error);
     }
   },
-  async deleteProduct(_, { code }, { errorName }) {
+  async deleteProduct(_, { code }, { clientRedis, errorName }) {
     try {
       const deleteProduct = await modelProducts.findOneAndDelete({ code: code });
-
-      if (typeof deleteProduct !== 'undefined') {
+      clientRedis.del(code);
+      if (deleteProduct !== null && typeof deleteProduct !== 'undefined') {
         return deleteProduct;
       }
 
@@ -34,10 +36,10 @@ module.exports = {
   async updateProduct(_, { code, input }, { clientRedis, errorName }) {
     try {
       clientRedis.del(code);
-      const updateProduct = await modelProducts.findOneAndUpdate({ code: code }, input, {
-        new: true,
-        runValidators: true,
-      });
+      if (input.price <= 0) {
+        throw errorName.PRODUCT_PRICE_NOT_VALID;
+      }
+      const updateProduct = await updateByCode(code, input);
       if (updateProduct) {
         return updateProduct;
       }

@@ -1,9 +1,9 @@
 /* eslint eqeqeq: 0 */
 
-const { generateCode } = require('../../functions/general.functions');
-const modelShoppingCar = require('../../models/shopingCar.model');
+const { generateCode } = require('../../utils/general.functions');
 const { getProductsByIds, validateIdsProducts } = require('../../services/products.service');
 const { getTotalPrice } = require('../../services/shoppingCar.service');
+const { createShoppingCarRepo, findByCode } = require('../../repositories/shoppingCar.repository');
 
 module.exports = {
   async createShoppingCar(_, { input }, { errorName }) {
@@ -26,9 +26,7 @@ module.exports = {
 
       input.code = generateCode(8);
 
-      const newShoppingCar = new modelShoppingCar(input);
-
-      await newShoppingCar.save();
+      const newShoppingCar = await createShoppingCarRepo(input);
 
       return newShoppingCar;
     } catch (error) {
@@ -46,7 +44,7 @@ module.exports = {
         errorName
       );
 
-      const shoppingCar = await modelShoppingCar.findOne({ code: codeCar });
+      const shoppingCar = await findByCode(codeCar);
 
       if (!shoppingCar) {
         throw errorName.SHOPPINGCAR_NO_FOUND;
@@ -87,7 +85,7 @@ module.exports = {
 
   async removeProductShoppingCar(_, { codeCar, productId }, { errorName }) {
     try {
-      const shoppingCar = await modelShoppingCar.findOne({ code: codeCar });
+      const shoppingCar = await findByCode(codeCar);
 
       if (!shoppingCar) {
         throw errorName.SHOPPINGCAR_NO_FOUND;

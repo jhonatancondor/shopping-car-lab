@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const { healthMonitor } = require('@condor-labs/health-middleware');
 const { healthConfig } = require('./src/config/health.config');
@@ -25,24 +26,27 @@ let clientRedis = null;
 
   app.use(
     '/graphql',
-    graphqlHTTP({
-      schema: graphQlSchema,
-      graphiql: true,
-      context: { errorName, clientRedis },
-      customFormatErrorFn: (err) => {
-        const errorJson = formatError.getError(err);
-        if (Object.prototype.hasOwnProperty.call(errorJson, 'statusCode')) {
-          return errorJson;
-        }
-        return { statusCode: '500', message: err.message };
-      },
+    graphqlHTTP((req, res) => {
+      return {
+        schema: graphQlSchema,
+        graphiql: true,
+        context: { errorName, clientRedis },
+        customFormatErrorFn: (err) => {
+          const errorJson = formatError.getError(err);
+          res.status(errorJson.statusCode || 500);
+          return {
+            message: errorJson.message || err.message,
+            statusCode: errorJson.statusCode || 500,
+          };
+        },
+      };
     })
   );
 
   healthMonitor(app, healthConfig);
 
-  const PORT = 4000;
-  const HOST = '0.0.0.0';
+  const PORT = process.env.EXPRESS_PORT;
+  const HOST = process.env.EXPRESS_HOST;
 
   app.listen(PORT, HOST);
   logger.debug(`Running on http://${HOST}:${PORT}`);

@@ -9,3 +9,4 @@ LICENSE
 .vscode
 coverage
 .husky
+.env
