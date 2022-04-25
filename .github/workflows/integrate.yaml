@@ -14,8 +14,10 @@ jobs:
           node-version: 12
       - run: npm ci
       - run: npm test
-      - name: Build the docker_compose
-        run: docker-compose up -d --build
+      - name: Build the docker
+        run: docker build -t shopping-car --build-arg ENV=prod .
+      - name: RUN the docker
+        run: docker run -t -d -p 8080:4000 shopping-car
   Deploy:
     needs: build
     runs-on: ubuntu-latest
